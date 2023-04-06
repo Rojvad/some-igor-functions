@@ -8,7 +8,7 @@
 //							variance is saved in LabVIEW.  YOU'LL HAVE TO CHANGE THIS BACK WHEN
 //							WORKING WITH DATA OLDER THAN 2/18!
 // Edited 2023-02-22
-// Edited 2023-02-24 - Added plan()
+// Edited 2023-04-06 - Added load_stdevData
 
 Function load_MBBTF()
 	
@@ -230,4 +230,37 @@ Function load_aMicData(graphNameSuffix)
 	ModifyGraph axisEnab(left)={0,0.95}
 	TextBox/C/N=title/F=1/A=LT/X=-0.21/Y=-3.51 "\\Z16No noise subtraction"
 	
+End
+
+// load the standard deviation vs z data from an sVsZ folder
+Function load_stdevData(prefix, numLocs, z, dz)
+	String prefix
+	Variable numLocs, z, dz
+	
+	NewPath/O myPath
+	
+	Variable i, imax=numLocs
+	String fileName_Sx, wOutName_Sx
+	String fileName_Sy, wOutName_Sy
+	for (i=0; i<imax; i+=1)
+		sprintf fileName_Sx, "stdevSxVsZ_%d", i
+		sprintf fileName_Sy, "stdevSyVsZ_%d", i
+		
+		LoadWave/Q/J/M/D/N=wave/K=1/P=myPath fileName_Sx
+		WAVE wave0
+		wOutName_Sx = prefix + fileName_Sx
+		Make/O/N=(numpnts(wave0)) $wOutName_Sx = wave0[0][p]
+		Wave wOut_Sx = $wOutName_Sx
+		
+		LoadWave/Q/J/M/D/N=wave/K=1/P=myPath fileName_Sy
+		WAVE wave0
+		wOutName_Sy = prefix + fileName_Sy
+		Make/O/N=(numpnts(wave0)) $wOutName_Sy = wave0[0][p]
+		Wave wOut_Sy = $wOutName_Sy
+		
+		
+		SetScale/P x, z, dz, "um", wOut_Sx, wOut_Sy
+		SetScale d, 0, 0, "V", wOut_Sx, wOut_Sy
+		
+	endfor
 End
