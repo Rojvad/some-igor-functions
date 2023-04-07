@@ -76,7 +76,7 @@ Function update_for_stdevVsZ(ba) : ButtonControl
 End
 
 // Use the Pythagorean theorem to find the distance between two points in a plane
-Function/D distance(x1, x2, y1, y2)
+Function/D dist(x1, x2, y1, y2)
 	Variable x1, x2, y1, y2
 	
 	Return sqrt( (x2-x1)^2 + (y2-y1)^2 )
