@@ -6,6 +6,19 @@ Function plan()
 	ModifyGraph width={Plan,1,bottom,left}
 End
 
+Function rainbow(isReverse)
+	Variable isReverse
+	
+	String imgList = ImageNameList("", ";")
+	Variable i, imax = ItemsInList(imgList)
+	String imgName
+	
+	for (i=0; i<imax; i+=1)
+		ModifyImage StringFromList(i, imgList) ctab= {*, *, Rainbow, isReverse}
+	endfor
+end
+	
+
 // If you have a window with images from lots of subsquares, it can be
 // useful to change all their color tables at once.
 Function set_ssColorTables(isSameMax, maxVal, colorTable, isReverse)
