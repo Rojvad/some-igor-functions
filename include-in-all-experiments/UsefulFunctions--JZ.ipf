@@ -14,7 +14,8 @@ Function rainbow(isReverse)
 	String imgName
 	
 	for (i=0; i<imax; i+=1)
-		ModifyImage StringFromList(i, imgList) ctab= {*, *, Rainbow, isReverse}
+		imgName = StringFromList(i, imgList)
+		ModifyImage $imgName ctab= {*, *, Rainbow, isReverse}
 	endfor
 end
 	
