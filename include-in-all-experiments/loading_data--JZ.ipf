@@ -173,11 +173,11 @@ Function load_aMicData(graphNameSuffix)
 	// pseudo code:
 	// Load in the stez
 	// Load in variance
-	// transpose variance and name it vvar
+	// transpose variance and name it vvar (NOT ANYMORE! I changed the LabVIEW code that makes variance)
 	// scale vvar to match stez
 	// display vvar on top of stez
 	// load in the sensitivity data
-	// take sqrt(vvar) / sensiUsed. Name it flucs_m_noNoiseSub
+	// take sqrt(vvar) / sensiUsed. Name it flucs_m_noNS
 	// display flucs_m_noNoiseSub on top of stez
 	NewPath/O myPath
 	
