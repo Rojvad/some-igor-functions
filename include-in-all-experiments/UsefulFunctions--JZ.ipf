@@ -89,6 +89,62 @@ Function update_for_stdevVsZ(ba) : ButtonControl
 	return 0
 End
 
+Function savePoints()
+	//#todo: save data folder ref, move to data folder with the data, then move back at end
+	ShowInfo
+	ControlBar 50
+	Button addPt title="Add pt",size={60,40},proc=add_PointFromCursor
+	Button firstPt title="1st pt",size={60,40},proc=start_listFromCursor
+	//#todo: would be better to put string in same folder as data
+	String/G listName = "list_"
+	SetVariable listNameControl title="Prefix for list",size={160,18},pos={140,10},fsize=16,value=listName
+	//#todo: Make a button that kills the control bar and buttons when you click it
+End
+
+// #todo: write this function!
+Function start_listFromCursor(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function add_PointFromCursor(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	SVAR listName
+	String list_xName = listName + "x"
+	String list_yName = listName + "y"
+	String list_valName = listName + "val"
+	String list_dName = listNAme + "d"
+	
+	//#extra: throw an error if wave isn't found
+	Wave list_X = $list_xName
+	Wave list_y = $list_yName
+	Wave list_val = $list_valName
+	Wave list_d = $list_dName
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			InsertPoints/V=(hcsr(A)) numpnts(list_x), 1, list_x
+			InsertPoints/V=(vcsr(A)) numpnts(list_y), 1, list_y
+			InsertPoints/V=(vcsr(A)) numpnts(list_x), 1, list_val
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 // Use the Pythagorean theorem to find the distance between two points in a plane
 Function/D dist(x1, x2, y1, y2)
 	Variable x1, x2, y1, y2
