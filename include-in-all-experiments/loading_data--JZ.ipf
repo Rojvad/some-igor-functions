@@ -264,3 +264,36 @@ Function load_stdevData(prefix, numLocs, z, dz)
 		
 	endfor
 End
+
+// For a scan that consists of multiple subsquares, these 2 functions load the stez wave
+// from each subsquare and display them on a single graph.
+// #extra: Limit the dirList to directories that have a name like ss_(some integer)
+Function load_stez_ss()
+
+	NewPath/O myPath
+	String dirList = IndexedDir(myPath, -1, 0)
+	
+	Variable i, imax = ItemsInList(dirList)
+	for (i=0; i<imax; i+=1)
+		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":stez.ibw"
+	endfor
+End
+
+Function display_stez_ss(graphName, isRainbow)
+	String graphName
+	Variable isRainbow
+	
+	String ss_waveList = WaveList("stez_ss*", ";", "")
+	
+	Display/N=$graphName
+	Variable i, imax = ItemsInList(ss_waveList)
+	for (i=0; i<imax; i+=1)
+		WAVE stez_oneSS = $StringFromList(i, ss_waveList)
+		AppendImage stez_oneSS
+	endfor
+	
+	plan()
+	if (isRainbow)
+		set_ssColorTables(1, inf, "Rainbow", 1)
+	endif
+End 

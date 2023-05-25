@@ -98,6 +98,8 @@ End
 // #extra: add some more ways to calculate distance. Like length ALONG the filament rather than
 // distance directly to 0th point. Or projected distance onto the axis between 0th and last point.
 // #extra: set the "data full scale" of the lists based on the image data
+
+// WaveRefIndexed and GetWavesDataFolder, as mentioned in WaveList documentation, could be useful
 // ------------------------------------------------------------------
 
 Function savePoints()
