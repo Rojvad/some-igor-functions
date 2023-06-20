@@ -100,7 +100,7 @@ Function load_SensiData(gridSize, filList_px)
 	
 	// Collect all the files which stored slopes for the perpindicular scans
 	// We only want the files that start with "Slopes___"
-	String/G slopeFileList = ""
+	String/G slopeFileList = ""  // #extra: I can probably remove the /G, right?
 	String fileName
 	Variable i, imax = ItemsInList(allFileList), keep
 	for (i=0; i<iMax; i+=1)
@@ -167,6 +167,7 @@ Function pull_values(img1, img2, list1Name, list2Name)
 End
 
 // This function requires that you've already done consolidate_pixelFiles_move()
+// #extra: Find pixelData folder rather than make user select it
 Function load_aMicData(graphNameSuffix)
 	String graphNameSuffix
 	
