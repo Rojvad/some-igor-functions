@@ -297,4 +297,100 @@ Function display_stez_ss(graphName, isRainbow)
 	if (isRainbow)
 		set_ssColorTables(1, inf, "Rainbow", 1)
 	endif
-End 
+End
+
+// #todo: Make a wave of wave references that points to the Sx response curves (and Sy)
+Function load_perpScans()
+
+	NewPath/O pixelDataPath
+	String allFileList = IndexedFile(pixelDataPath, -1, "????")
+	
+	String/G sxFileList = ""
+	String/G syFileList = ""
+	String fileName, wOutName
+	Variable i, imax = ItemsInList(allFileList), isSx, isSy
+	for (i=0; i<imax; i+=1)
+		fileName = StringFromList(i, allFileList)
+		isSx = StringMatch(fileName, "SensiScanX*")
+		isSy = StringMatch(fileName, "SensiScanY*")
+		if (isSx)
+			sxFileList = AddListItem(fileName, sxFileList)
+		elseif(isSy)
+			syFileList = AddListItem(fileName, syFileList)
+		endif
+	endfor
+	
+	// Put the file lists in order. This isn't actually necessary
+	sxFileList = SortList(sxFileList, ";", 16)
+	syFileList = SortList(syFileList, ";", 16)
+	
+	// Make some waves to store references to all the response curves
+	Make/WAVE/O/N=(itemsInList(sxFileList)) allPerpScans_Sx
+	Make/WAVE/O/N=(itemsInList(syFileList)) allPerpScans_Sy
+	
+	// Load the Sx data for the perpendicular scans
+	imax = ItemsInList(sxFileList)
+	for (i=0; i<imax; i+=1)
+		fileName = StringFromList(i, sxFileList)
+		LoadWave/Q/J/M/D/N=sx/K=0/P=pixelDataPath fileName
+		Wave sx0
+		wOutName = "sx_perpScan" + num2str(i)
+		Make/O/N=(DimSize(sx0,1)) $wOutName = sx0[p]
+		Wave wOut = $wOutName
+		allPerpScans_Sx[i] = wOut
+	endfor
+	
+	// Load the Sy data for the perpendicular scans
+	imax = ItemsInList(syFileList)
+	for (i=0; i<imax; i+=1)
+		fileName = StringFromList(i, syFileList)
+		LoadWave/Q/J/M/D/N=sy/K=0/P=pixelDataPath fileName
+		Wave sy0
+		wOutName = "sy_perpScan" + num2str(i)
+		Make/O/N=(DimSize(sx0,1)) $wOutName = sy0[p]
+		Wave wOut = $wOutName
+		allPerpScans_Sy[i] = wOut
+	endfor
+	
+	KillWaves sx0, sy0
+End
+
+// #todo: this should be writeen in terms of perp scan length and dx
+//Function scale_perpScans_edit(locNums, xi, dx)
+//	Wave locNums
+//	Variable xi, dx
+//	
+//	Variable i, imax = numpnts(locNums)
+//	String ogName
+//	for (i=0; i<imax; i+=1)
+//		ogName = "sx_perpScan" + num2str(locNums[i])
+//		Wave wIn = $ogName
+//		SetScale/P x, xi, dx, "um", wIn
+//		
+//		ogName = "sy_perpScan" + num2str(locNums[i])
+//		Wave wIn = $ogName
+//		SetScale/P x, xi, dx, "um", wIn
+//	endfor
+//
+//End
+
+// #todo: make copies for Sy responses, too
+// #todo: this should be writeen in terms of perp scan length and dx
+Function scale_perpScans_copy(locNums, xi, dx)
+	Wave locNums
+	Variable xi, dx
+	
+	Variable i, imax = numpnts(locNums)
+	String ogName, wOutName
+	for (i=0; i<imax; i+=1)
+		ogName = "sx_perpScan" + num2str(locNums[i])
+		Wave wIn = $ogName
+		wOutName = ogName + "_scaledWell"
+		Duplicate/O wIn, $wOutName
+		Wave wOut = $wOutName
+		
+		SetScale/P x, xi, dx, "um", wOut
+
+	endfor
+
+End

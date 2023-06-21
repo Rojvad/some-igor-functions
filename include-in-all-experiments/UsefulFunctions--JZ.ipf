@@ -212,3 +212,14 @@ Function/D dist(x1, x2, y1, y2)
 	Return sqrt( (x2-x1)^2 + (y2-y1)^2 )
 End
 
+// If you have a wave of wave references, this function rescales all the referenced waves
+Function scale_waves_edit(waves, xi, dx, unit)
+	Wave/WAVE waves
+	Variable xi, dx
+	String unit
+	
+	Variable i, imax = numpnts(waves)
+	for (i=0; i<imax; i+=1)
+		SetScale/P x, xi, dx, unit, waves[i]
+	endfor
+End
