@@ -299,7 +299,8 @@ Function display_stez_ss(graphName, isRainbow)
 	endif
 End
 
-// #todo: Make a wave of wave references that points to the Sx response curves (and Sy)
+// #bonus: put the perp scans in a child data folder rather than having
+//				hundreds of wave clutter things up
 Function load_perpScans()
 
 	NewPath/O pixelDataPath
@@ -355,7 +356,7 @@ Function load_perpScans()
 	KillWaves sx0, sy0
 End
 
-// #todo: this should be writeen in terms of perp scan length and dx
+// #todo: this should be written in terms of perp scan length and dx
 //Function scale_perpScans_edit(locNums, xi, dx)
 //	Wave locNums
 //	Variable xi, dx
@@ -391,6 +392,47 @@ Function scale_perpScans_copy(locNums, xi, dx)
 		
 		SetScale/P x, xi, dx, "um", wOut
 
+	endfor
+
+End
+
+// This is a naive way to find the sensitivity from a response curve.
+// It simply takes the derivative of the response curve and looks up
+// the derivative value at the point i_center.
+Function/D findDerivAtCenter_simple(wIn, i_center)
+	Wave wIn
+	Variable i_center
+	
+	Differentiate wIn /D=wIn_deriv
+	Variable result = abs(wIn_deriv[i_center])
+	KillWaves wIn_deriv
+	
+	Return result
+End
+
+// This uses "findDerivAtCenter_simple" to find an Sx and Sy
+// sensitivity for every filament location.
+// It saves the results in 2D waves, sensis_Sx and sensis_Sy.
+// To find where to put each sensitivity, it looks up the x
+// and y pixel values from filLocs_px
+Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize)
+	Wave/WAVE perpScans_Sx, perpScans_Sy
+	Wave filLocs_px
+	Variable gridSize
+	
+	Make/O/N=(gridSize, gridSize) sensis_Sx = NaN, sensis_Sy = NaN
+	Variable sensi_Sx, sensi_Sy
+	Variable x_px, y_px
+	Variable i, imax = DimSize(filLocs_px, 0)
+	for (i=0; i<imax; i+=1)
+		x_px = filLocs_px[i][0]
+		y_px = filLocs_px[i][1]
+		
+		sensi_Sx = findDerivAtCenter_simple(perpScans_Sx[i], 20)
+		sensis_Sx[x_px][y_px] = sensi_Sx
+		
+		sensi_Sy = findDerivAtCenter_simple(perpScans_Sy[i], 20)
+		sensis_Sy[x_px][y_px] = sensi_Sy
 	endfor
 
 End
