@@ -399,6 +399,7 @@ End
 // This is a naive way to find the sensitivity from a response curve.
 // It simply takes the derivative of the response curve and looks up
 // the derivative value at the point i_center.
+// #todo: Based on LabVIEW code, find a formula for i_center
 Function/D findDerivAtCenter_simple(wIn, i_center)
 	Wave wIn
 	Variable i_center
@@ -415,10 +416,10 @@ End
 // It saves the results in 2D waves, sensis_Sx and sensis_Sy.
 // To find where to put each sensitivity, it looks up the x
 // and y pixel values from filLocs_px
-Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize)
+Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize, i_center)
 	Wave/WAVE perpScans_Sx, perpScans_Sy
 	Wave filLocs_px
-	Variable gridSize
+	Variable gridSize, i_center
 	
 	Make/O/N=(gridSize, gridSize) sensis_Sx = NaN, sensis_Sy = NaN
 	Variable sensi_Sx, sensi_Sy
@@ -428,10 +429,10 @@ Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize)
 		x_px = filLocs_px[i][0]
 		y_px = filLocs_px[i][1]
 		
-		sensi_Sx = findDerivAtCenter_simple(perpScans_Sx[i], 20)
+		sensi_Sx = findDerivAtCenter_simple(perpScans_Sx[i], i_center)
 		sensis_Sx[x_px][y_px] = sensi_Sx
 		
-		sensi_Sy = findDerivAtCenter_simple(perpScans_Sy[i], 20)
+		sensi_Sy = findDerivAtCenter_simple(perpScans_Sy[i], i_center)
 		sensis_Sy[x_px][y_px] = sensi_Sy
 	endfor
 
