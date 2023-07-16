@@ -234,7 +234,32 @@ Function load_aMicData(graphNameSuffix)
 End
 
 // load the standard deviation vs z data from an sVsZ folder
-Function load_stdevData(prefix, numLocs, z, dz)
+// This is for the version that saves only Sx or Sy data, not both
+Function load_stdevData_v1(prefix, numLocs, z, dz)
+	String prefix
+	Variable numLocs, z, dz
+	
+	NewPath/O myPath
+	
+	Variable i, imax=numLocs
+	String fileName, wOutName
+	for (i=0; i<imax; i+=1)
+		sprintf fileName, "stdevVsZ_%d", i
+		
+		LoadWave/Q/J/M/D/N=wave/K=1/P=myPath fileName
+		WAVE wave0
+		wOutName = prefix + fileName
+		Make/O/N=(numpnts(wave0)) $wOutName = wave0[0][p]
+		Wave wOut = $wOutName
+			
+		SetScale/P x, z, dz, "um", wOut
+		SetScale d, 0, 0, "V", wOut
+	endfor
+End
+
+// load the standard deviation vs z data from an sVsZ folder
+// This is for the version that saves both Sx and Sy data
+Function load_stdevData_v2(prefix, numLocs, z, dz)
 	String prefix
 	Variable numLocs, z, dz
 	
