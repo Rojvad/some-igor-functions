@@ -235,7 +235,7 @@ End
 
 // load the standard deviation vs z data from an sVsZ folder
 // This is for the version that saves only Sx or Sy data, not both
-Function load_stdevData_v1(prefix, numLocs, z, dz)
+Function load_stdevData_Si(prefix, numLocs, z, dz)
 	String prefix
 	Variable numLocs, z, dz
 	
@@ -259,7 +259,7 @@ End
 
 // load the standard deviation vs z data from an sVsZ folder
 // This is for the version that saves both Sx and Sy data
-Function load_stdevData_v2(prefix, numLocs, z, dz)
+Function load_stdevData_SxSy(prefix, numLocs, z, dz)
 	String prefix
 	Variable numLocs, z, dz
 	
