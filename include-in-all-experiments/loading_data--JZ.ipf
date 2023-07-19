@@ -70,6 +70,7 @@ Function consolidate_pixelFiles_move()
 	String folderList = IndexedDir(pathToFolder, -1, 0)
 	// in case pixelData already exists, you don't want to move files from there!
 	folderList = removeFromList("pixelData", folderList)
+	folderList = removeFromList("sVsZ", folderList) // or from the sVsZ folder
 	Print folderlist
 	
 	String pixelDataStr = pathToFolderStr + "pixelData:"
@@ -325,10 +326,16 @@ Function display_stez_ss(graphName, isRainbow)
 End
 
 // #bonus: put the perp scans in a child data folder rather than having
-//				hundreds of wave clutter things up
-Function load_perpScans()
+//				hundreds of waves clutter things up
+Function load_perpScans([pathString])
+	String pathString
 
-	NewPath/O pixelDataPath
+	if (!ParamIsDefault(pathString))
+		NewPath/O pixelDataPath, pathString
+	else
+		NewPath/O pixelDataPath
+	endif
+		
 	String allFileList = IndexedFile(pixelDataPath, -1, "????")
 	
 	String/G sxFileList = ""
