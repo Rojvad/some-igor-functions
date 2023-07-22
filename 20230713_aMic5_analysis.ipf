@@ -10,7 +10,7 @@ Constant perpScan_iCenter = 40
 Constant vvar_Sx_noise = 0.002192197540016086; // How much voltage variance should you subtract from Sx fluc measurements? 
 Constant vvar_Sy_noise = 0.002510640934040701; // How much voltage variance should you subtract from Sy fluc measurements?
 
-Function main()
+Function analyze_aMic5_20230713()
 
 	NewDataFolder/s $dfName
 	// Should probably make a reference to the df
