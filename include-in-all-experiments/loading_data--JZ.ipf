@@ -62,9 +62,15 @@ End
 // Use for aMic fluctuation data.
 // Moves all the files from the numbered folders into a folder called pixelData.
 // Deletes the numbered folders afterwards.
-Function consolidate_pixelFiles_move()
+Function consolidate_pixelFiles_move([pathString])
+	String pathString
+
+	if (!ParamIsDefault(pathString))
+		NewPath/O pathToFolder, pathString
+	else
+		NewPath/O pathToFolder
+	endif
 	
-	NewPath/O pathToFolder
 	PathInfo pathToFolder
 	String pathToFolderStr = S_path
 	String folderList = IndexedDir(pathToFolder, -1, 0)
@@ -84,6 +90,28 @@ Function consolidate_pixelFiles_move()
 		// DeleteFolder oldFolderStr
 	endfor
 end
+
+// Let's say you've done an aMic scan with multiple subsquares. This lets you
+// consolidate the pixel files for every Subsquare
+//
+// #todo: Make sure the folder names in ss_folderList all start with "ss"
+Function consolidate_pixelFiles_move_ssVersion([pathString])
+	String pathString
+
+	if (!ParamIsDefault(pathString))
+		NewPath/O basePath, pathString
+	else
+		NewPath/O basePath
+	endif
+	
+	String ss_folderList = IndexedDir(basePath, -1, 1)
+	
+	Variable i, imax = ItemsInList(ss_folderList)
+	for (i=0; i<imax; i+=1)
+		consolidate_pixelFiles_move(pathString=StringFromList(i, ss_folderList))
+	endfor
+
+End
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Added the stuff below on 2023/02/07. I didn't check it to perfection, I just
