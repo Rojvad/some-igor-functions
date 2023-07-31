@@ -334,6 +334,32 @@ Function load_stez_ss()
 	endfor
 End
 
+// Similar to v1, but it creates stezRef_allSS, which holds references to all the
+// stez waves for different subsquares.
+// Also, it chooses the names for the stez waves rather than taking the name saved
+// in the Igor binary file.
+// WARNING! I don't think it IS choosing the names. I think it's still using the
+// name waved in the Igor binary
+Function load_stez_ss_v2()
+
+	NewPath/O myPath
+	String dirList = IndexedDir(myPath, -1, 0)
+	
+	// put the directories in the correct order
+	dirList = SortList(dirList, ";", 16)
+	
+	Variable i, imax = ItemsInList(dirList)
+	// Make a wave that will hold references to all the stez waves
+	Make/O/N=(imax)/WAVE stezRef_allSS
+	String wName
+	for (i=0; i<imax; i+=1)
+		LoadWave/Q/P=myPath/A=stez_ss ":" + StringFromList(i, dirList) + ":stez.ibw"
+		wName = "stez_ss" + num2str(i)
+		Wave oneStez = $wName
+		stezRef_allSS[i] = oneStez
+	endfor
+End
+
 Function display_stez_ss(graphName, isRainbow)
 	String graphName
 	Variable isRainbow
