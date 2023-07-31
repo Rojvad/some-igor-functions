@@ -223,3 +223,35 @@ Function scale_waves_edit(waves, xi, dx, unit)
 		SetScale/P x, xi, dx, unit, waves[i]
 	endfor
 End
+
+// For a given type of wave, plot all the subsquare's data in one combined graph.
+// waveWave holds references to all the subsquares' waves
+// plotName should be left as "" if you want to append the waves to the top graph
+// mode is either "image" for a 2D wave that represents an image,
+// or "xy" for a wave that is a list of (x, y) points.
+Function plot_waves_allSS(waveWave, plotName, mode)
+	Wave/WAVE waveWave
+	String plotName, mode
+
+	if (!stringmatch(plotName, ""))
+		Display/N=$plotName
+	endif
+	
+	Variable i, imax = numpnts(waveWave)
+	for (i=0; i<imax; i+=1)
+	
+		if (stringmatch(mode, "img"))
+			Wave image = waveWave[i]
+			AppendImage image
+		elseif (stringmatch(mode, "XY"))
+			Wave xyList = waveWave[i]
+			AppendToGraph xyList[][1] vs xyList[][0]
+		endif
+	endfor
+	
+	plan()
+	if (stringmatch(mode, "XY"))
+		ModifyGraph mode=3,marker=19,msize=1
+	endif
+		
+End
