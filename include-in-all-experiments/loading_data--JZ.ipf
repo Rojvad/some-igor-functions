@@ -262,6 +262,95 @@ Function load_aMicData(graphNameSuffix)
 	
 End
 
+// load_aMicWaves_ss:
+// 		This is sort of an updated version of load_aMicData(). For a scan with multiple subsquares,
+// 		it loads a collection of useful waves for each subsquare. It also makes waves of references
+//		to keep everything well-organized.
+// paramters:
+//		pathString : A complete path to the folder which holds all the subsquare folders
+// #bonus: check that all the subfolders have names like ss_
+Function load_aMicWaves_ss([pathString])
+	String pathString
+	
+	if (!ParamIsDefault(pathString))
+		NewPath/O basePath, pathString
+	else
+		NewPath/O basePath
+	endif
+
+	String dirList = IndexedDir(myPath, -1, 0)
+	
+	// put the directories in the correct order
+	dirList = SortList(dirList, ";", 16)
+	
+	Variable i, imax = ItemsInList(dirList)
+	// Make waves that will hold references to all the subsquare waves
+	Make/O/N=(imax)/WAVE stezRef_allSS, SxRef_allSS, SyRef_allSS
+	Make/O/N=(imax)/WAVE vvarSxRef_allSS, vvarSyRef_allSS, angleImgRef_allSS
+	Make/O/N=(imax)/WAVE filLocsRef_allSS
+	Variable xOffset, yOffset, dx, dy
+	String wName
+	for (i=0; i<imax; i+=1)
+		// stez. The stez waves have the ss number saved in the Igor Binary
+		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":stez.ibw"
+		wName = "stez_ss" + num2str(i)
+		Wave oneWave = $wName
+		stezRef_allSS[i] = oneWave
+		xOffset = DimOffset(oneWave, 0)
+		yOffset = DimOffset(oneWave, 1)
+		dx = DimDelta(oneWave, 0)
+		dy = DimDelta(oneWave, 1)
+		
+		// Sx and Sy (assumes they're saved as Igor binaries)
+		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":Sx.ibw"
+		Wave Sx
+		wName = "Sx_ss" + num2str(i)
+		Rename Sx, $wName
+		Wave oneWave = $wName
+		SxRef_allSS[i] = oneWave
+		
+		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":Sy.ibw"
+		Wave Sy
+		wName = "Sy_ss" + num2str(i)
+		Rename Sy, $wName
+		Wave oneWave = $wName
+		SyRef_allSS[i] = oneWave
+		
+		// vvarSx and vvarSy. These are delimited text files.
+		LoadWave/Q/J/M/D/P=myPath/A=vvarSx_ss/K=1 ":" + StringFromList(i, dirList) + ":variance_Sx"
+		wName = "vvarSx_ss" + num2str(i)
+		Wave oneWave = $wName
+		SetScale/P x, xOffset, dx, "um", oneWave
+		SetScale/P y, yOffset, dy, "um", oneWave
+		vvarSxRef_allSS[i] = oneWave
+		
+		LoadWave/Q/J/M/D/P=myPath/A=vvarSy_ss/K=1 ":" + StringFromList(i, dirList) + ":variance_Sy"
+		wName = "vvarSy_ss" + num2str(i)
+		Wave oneWave = $wName
+		SetScale/P x, xOffset, dx, "um", oneWave
+		SetScale/P y, yOffset, dy, "um", oneWave
+		vvarSyRef_allSS[i] = oneWave
+		
+		// angleWave. This is a delimited text file
+		LoadWave/Q/J/M/D/P=myPath/A=angleImg_ss/K=1 ":" + StringFromList(i, dirList) + ":AngleWaveImage"
+		wName = "angleImg_ss" + num2str(i)
+		Wave oneWave = $wName
+		SetScale/P x, xOffset, dx, "um", oneWave
+		SetScale/P y, yOffset, dy, "um", oneWave
+		angleImgRef_allSS[i] = oneWave
+		
+		// Filament locations. This is a delimited text file.
+		LoadWave/Q/J/M/D/P=myPath/A=filLocs_um_ss/K=1 ":" + StringFromList(i, dirList) + ":FilamentScatterWaveAxisONLYordered_in_m"
+		wName = "filLocs_m_ss" + num2str(i)
+		Wave oneWave = $wName
+		oneWave *= 1e6
+		oneWave[][0] += xOffset
+		oneWave[][1] += yOffset
+		filLocsRef_allSS[i] = oneWave
+		
+	endfor
+End
+
 // load the standard deviation vs z data from an sVsZ folder
 // This is for the version that saves only Sx or Sy data, not both
 Function load_stdevData_Si(prefix, numLocs, z, dz)
@@ -429,7 +518,7 @@ Function load_perpScans([pathString, df])
 		LoadWave/Q/J/M/D/N=sx/K=0/P=pixelDataPath fileName
 		Wave sx0
 		wOutName = "sx_perpScan" + num2str(i)
-		Make/O/N=(DimSize(sx0,1)) $wOutName = sx0[p]
+		Make/O/D/N=(DimSize(sx0,1)) $wOutName = sx0[0][p]
 		Wave wOut = $wOutName
 		allPerpScans_Sx[i] = wOut
 	endfor
@@ -441,7 +530,7 @@ Function load_perpScans([pathString, df])
 		LoadWave/Q/J/M/D/N=sy/K=0/P=pixelDataPath fileName
 		Wave sy0
 		wOutName = "sy_perpScan" + num2str(i)
-		Make/O/N=(DimSize(sx0,1)) $wOutName = sy0[p]
+		Make/O/D/N=(DimSize(sx0,1)) $wOutName = sy0[0][p]
 		Wave wOut = $wOutName
 		allPerpScans_Sy[i] = wOut
 	endfor
@@ -451,12 +540,12 @@ Function load_perpScans([pathString, df])
 End
 
 // load_perpScans_ssVersion:
-// 	For each subsquare, make a data folder. That data folder will hold waves with
-// 	the Sx and Sy data for all the perpendicular scans. Thus, there will be two
-// 	waves for each filament location. There will also be two waves in the data folder
-// 	which hold references to all the waves in the df.
+// 		For each subsquare, make a data folder. That data folder will hold waves with
+// 		the Sx and Sy data for all the perpendicular scans. Thus, there will be two
+// 		waves for each filament location. There will also be two waves in the data folder
+// 		which hold references to all the waves in the df.
 // parameters:
-// 	pathString: A complete path to the folder which holds all the subsquare folders.
+// 		pathString : A complete path to the folder which holds all the subsquare folders.
 
 // #bonus: Maybe have a wave of referenes to the allPerpScans waves
 // in each df too?
