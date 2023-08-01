@@ -129,7 +129,7 @@ Function load_SensiData(gridSize, filList_px)
 	
 	// Collect all the files which stored slopes for the perpindicular scans
 	// We only want the files that start with "Slopes___"
-	String/G slopeFileList = ""  // #extra: I can probably remove the /G, right?
+	String slopeFileList = ""
 	String fileName
 	Variable i, imax = ItemsInList(allFileList), keep
 	for (i=0; i<iMax; i+=1)
@@ -381,13 +381,20 @@ End
 
 // #bonus: put the perp scans in a child data folder rather than having
 //				hundreds of waves clutter things up
-Function load_perpScans([pathString])
+Function load_perpScans([pathString, df])
 	String pathString
-
+	DFREF df
+	
+	DFREF saveDFR = GetDataFolderDFR()
+	
 	if (!ParamIsDefault(pathString))
 		NewPath/O pixelDataPath, pathString
 	else
 		NewPath/O pixelDataPath
+	endif
+	
+	if (!ParamIsDefault(df))
+		SetDataFolder df
 	endif
 		
 	String allFileList = IndexedFile(pixelDataPath, -1, "????")
@@ -440,6 +447,50 @@ Function load_perpScans([pathString])
 	endfor
 	
 	KillWaves sx0, sy0
+	SetDataFolder saveDFR
+End
+
+// load_perpScans_ssVersion:
+// 	For each subsquare, make a data folder. That data folder will hold waves with
+// 	the Sx and Sy data for all the perpendicular scans. Thus, there will be two
+// 	waves for each filament location. There will also be two waves in the data folder
+// 	which hold references to all the waves in the df.
+// parameters:
+// 	pathString: A complete path to the folder which holds all the subsquare folders.
+
+// #bonus: Maybe have a wave of referenes to the allPerpScans waves
+// in each df too?
+Function load_perpScans_ssVersion([pathString])
+	String pathString
+	
+	DFREF saveDFR = GetDataFolderDFR()	
+	
+	if (!ParamIsDefault(pathString))
+		NewPath/O basePath, pathString
+	else
+		NewPath/O basePath
+	endif
+	
+	String ss_folderList = IndexedDir(basePath, -1, 1)
+	// put the directories in the correct order
+	ss_folderList = SortList(ss_folderList, ";", 16)
+	
+	Variable i, imax = ItemsInList(ss_folderList)
+	// This wave will store references to all the data folders (one for each subsquare)
+	Make/O/DF/N=(imax) perpScanDfRef_allSS
+	String ssPathString, dfName
+	Variable n
+	for (i=0; i<imax; i+=1)
+ 
+		ssPathString = StringFromList(i, ss_folderList)
+		n = ItemsInList(ssPathString, ":")
+		dfName = StringFromList(n-1, ssPathString, ":")
+		NewDataFolder $dfName
+		perpScanDfRef_allSS[i] = saveDFR:$dfName
+		
+		load_perpScans(pathString=ssPathString+":pixelData:", df=perpScanDFRef_allSS[i])
+
+	endfor
 End
 
 // #todo: this should be written in terms of perp scan length and dx
