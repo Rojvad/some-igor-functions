@@ -603,24 +603,24 @@ End
 
 // #todo: make copies for Sy responses, too
 // #todo: this should be writeen in terms of perp scan length and dx
-Function scale_perpScans_copy(locNums, xi, dx)
-	Wave locNums
-	Variable xi, dx
-	
-	Variable i, imax = numpnts(locNums)
-	String ogName, wOutName
-	for (i=0; i<imax; i+=1)
-		ogName = "sx_perpScan" + num2str(locNums[i])
-		Wave wIn = $ogName
-		wOutName = ogName + "_scaledWell"
-		Duplicate/O wIn, $wOutName
-		Wave wOut = $wOutName
-		
-		SetScale/P x, xi, dx, "um", wOut
-
-	endfor
-
-End
+//Function scale_perpScans_copy(locNums, xi, dx)
+//	Wave locNums
+//	Variable xi, dx
+//	
+//	Variable i, imax = numpnts(locNums)
+//	String ogName, wOutName
+//	for (i=0; i<imax; i+=1)
+//		ogName = "sx_perpScan" + num2str(locNums[i])
+//		Wave wIn = $ogName
+//		wOutName = ogName + "_scaledWell"
+//		Duplicate/O wIn, $wOutName
+//		Wave wOut = $wOutName
+//		
+//		SetScale/P x, xi, dx, "um", wOut
+//
+//	endfor
+//
+//End
 
 // This is a naive way to find the sensitivity from a response curve.
 // It simply takes the derivative of the response curve and looks up
