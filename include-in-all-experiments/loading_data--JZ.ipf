@@ -351,6 +351,109 @@ Function load_aMicWaves_ss([pathString])
 	endfor
 End
 
+// load_allWavesLikeTemplate:
+//		Say you have a bunch of text-delimited files that all start with "file_".
+//		This function loads all of those files, and makes a reference wave that
+//		points to all of them.
+// parameters:
+//		nameTemplate : a string that tells how all the file names should start
+//		pathSTring : a string w/ the complete path the folder with all the files
+//		df : a data folder in igor where all the loaded waves will be kept
+//	outputs:
+//		- one wave for each file name that matched the template
+//		- *nameTemplate*_All : a wave of references that points to all the loaded waves
+Function load_allWavesLikeTemplate(nameTemplate, [pathString, df])
+	String nameTemplate, pathString
+	DFREF df
+	
+	DFREF saveDFR = GetDataFolderDFR()
+	
+	if (!ParamIsDefault(pathString))
+		NewPath/O myPath, pathString
+	else
+		NewPath/O myPath
+	endif
+	
+	if (!ParamIsDefault(df))
+		SetDataFolder df
+	endif
+		
+	String allFileList = IndexedFile(myPath, -1, "????")
+	
+	String matchingWavesList = ""
+	String fileName
+	Variable i, imax = ItemsInList(allFileList), isMatch
+	for (i=0; i<imax; i+=1)
+		fileName = StringFromList(i, allFileList)
+		isMatch = StringMatch(fileName, nameTemplate + "*")
+		if (isMatch)
+			matchingWavesList = AddListItem(fileName, matchingWavesList)
+		endif
+	endfor
+	
+	// Put the file lists in order
+	matchingWavesList = SortList(matchingWavesList, ";", 16)
+	
+	// Make a waves to store references to all the loaded waves
+	String refWaveName = nameTemplate + "_All"
+	Make/WAVE/O/N=(itemsInList(matchingWavesList)) $refWaveName
+	Wave/WAVE refWave = $refWaveName
+	
+	// Load all the waves
+	imax = ItemsInList(matchingWavesList)
+	String wName
+	for (i=0; i<imax; i+=1)
+		fileName = StringFromList(i, matchingWavesList)
+		LoadWave/Q/J/M/D/N=wIn/K=0/P=myPath fileName
+		Wave wIn0
+		wName = fileName // I may decide to use a different name
+		Make/O/D/N=(DimSize(wIn0,1)) $wName = wIn0[0][p]
+		Wave oneWave = $wName
+		refWave[i] = oneWave
+	endfor
+	
+	KillWaves wIn0
+End
+
+
+// load_allWavesLikeTemplates:
+// Give a LIST of file name templates, and this function will load data from
+// all the files which match one fo the templates. Calls on load_allWavesLikeTemplate.
+// parameters:
+//		nameTemplates : all of the file name templates to look for. This is a string with a
+//			semicolon-separated list of templates.
+//		pathSTring : a string w/ the complete path the folder with all the files
+//		df : a data folder in igor where all the loaded waves will be kept
+//	outputs:
+//		- one wave for each file name that matched a template
+//		*nameTemplate*_All : one wave of references for each template, which point to the
+//			loaded waves
+Function load_allWavesLikeTemplates(nameTemplates, [pathString, df])
+	String nameTemplates, pathString
+	DFREF df
+	
+	DFREF saveDFR = GetDataFolderDFR()
+	
+	if (!ParamIsDefault(pathString))
+		NewPath/O myPath, pathString
+	else
+		NewPath/O myPath
+		PathInfo myPath
+		pathString = S_path
+	endif
+	
+	if (!ParamIsDefault(df))
+		SetDataFolder df
+	endif
+	
+	Variable i, imax = ItemsInList(nameTemplates)
+	String nameTemplate
+	for (i=0; i<imax; i+=1)
+		nameTemplate = StringFromList(i, nameTemplates)
+		load_allWavesLikeTemplate(nameTemplate, pathString=pathString)
+	endfor
+End
+
 // load the standard deviation vs z data from an sVsZ folder
 // This is for the version that saves only Sx or Sy data, not both
 Function load_stdevData_Si(prefix, numLocs, z, dz)
