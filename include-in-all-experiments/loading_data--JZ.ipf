@@ -351,6 +351,8 @@ Function load_aMicWaves_ss([pathString])
 	endfor
 End
 
+// #todo: Remove the mode option. CHECK if the loaded wave is 2d or 1d
+//
 // load_allWavesLikeTemplate:
 //		Say you have a bunch of text-delimited files that all start with "file_".
 //		This function loads all of those files, and makes a reference wave that
@@ -362,8 +364,8 @@ End
 //	outputs:
 //		- one wave for each file name that matched the template
 //		- *nameTemplate*_All : a wave of references that points to all the loaded waves
-Function load_allWavesLikeTemplate(nameTemplate, [pathString, df])
-	String nameTemplate, pathString
+Function load_allWavesLikeTemplate(nameTemplate, mode, [pathString, df, wOutName])
+	String nameTemplate, mode, pathString, wOutName
 	DFREF df
 	
 	DFREF saveDFR = GetDataFolderDFR()
@@ -380,7 +382,7 @@ Function load_allWavesLikeTemplate(nameTemplate, [pathString, df])
 		
 	String allFileList = IndexedFile(myPath, -1, "????")
 	
-	String matchingWavesList = ""
+	String/G matchingWavesList = "" // #todo: remove this /G later
 	String fileName
 	Variable i, imax = ItemsInList(allFileList), isMatch
 	for (i=0; i<imax; i+=1)
@@ -395,7 +397,12 @@ Function load_allWavesLikeTemplate(nameTemplate, [pathString, df])
 	matchingWavesList = SortList(matchingWavesList, ";", 16)
 	
 	// Make a waves to store references to all the loaded waves
-	String refWaveName = nameTemplate + "_All"
+	String refWaveName
+	if (!ParamIsDefault(wOutName))
+		refWaveName = wOutName + "_All"
+	else
+		refWaveName = nameTemplate + "_All"
+	endif
 	Make/WAVE/O/N=(itemsInList(matchingWavesList)) $refWaveName
 	Wave/WAVE refWave = $refWaveName
 	
@@ -404,10 +411,20 @@ Function load_allWavesLikeTemplate(nameTemplate, [pathString, df])
 	String wName
 	for (i=0; i<imax; i+=1)
 		fileName = StringFromList(i, matchingWavesList)
+		Print "fileName = " + fileName // #todo: remove this print statement later
 		LoadWave/Q/J/M/D/N=wIn/K=0/P=myPath fileName
 		Wave wIn0
-		wName = fileName // I may decide to use a different name
-		Make/O/D/N=(DimSize(wIn0,1)) $wName = wIn0[0][p]
+		if (!ParamIsDefault(wOutName))
+			wName = wOutName + "_" + num2str(i)
+		else
+			wName = fileName // I may decide to use a different name
+		endif
+		
+		if (StringMatch(mode, "1d"))
+			Make/O/D/N=(DimSize(wIn0,1)) $wName = wIn0[0][p]
+		elseif (StringMatch(mode, "2d"))
+			Rename wIn0, $wName
+		endif
 		Wave oneWave = $wName
 		refWave[i] = oneWave
 	endfor
@@ -428,8 +445,8 @@ End
 //		- one wave for each file name that matched a template
 //		*nameTemplate*_All : one wave of references for each template, which point to the
 //			loaded waves
-Function load_allWavesLikeTemplates(nameTemplates, [pathString, df])
-	String nameTemplates, pathString
+Function load_allWavesLikeTemplates(nameTemplates, mode, [pathString, df])
+	String nameTemplates, mode, pathString
 	DFREF df
 	
 	DFREF saveDFR = GetDataFolderDFR()
@@ -450,7 +467,7 @@ Function load_allWavesLikeTemplates(nameTemplates, [pathString, df])
 	String nameTemplate
 	for (i=0; i<imax; i+=1)
 		nameTemplate = StringFromList(i, nameTemplates)
-		load_allWavesLikeTemplate(nameTemplate, pathString=pathString)
+		load_allWavesLikeTemplate(nameTemplate, mode, pathString=pathString)
 	endfor
 End
 
@@ -463,6 +480,7 @@ Function load_stdevData_Si(prefix, numLocs, z, dz)
 	NewPath/O myPath
 	
 	Variable i, imax=numLocs
+	Make/O/WAVE/N=(numLocs) stdevVsZ_all
 	String fileName, wOutName
 	for (i=0; i<imax; i+=1)
 		sprintf fileName, "stdevVsZ_%d", i
@@ -472,10 +490,13 @@ Function load_stdevData_Si(prefix, numLocs, z, dz)
 		wOutName = prefix + fileName
 		Make/O/N=(numpnts(wave0)) $wOutName = wave0[0][p]
 		Wave wOut = $wOutName
+		stdevVsZ_all[i] = wOut
 			
 		SetScale/P x, z, dz, "um", wOut
 		SetScale d, 0, 0, "V", wOut
 	endfor
+	
+	KillWaves wave0
 End
 
 // load the standard deviation vs z data from an sVsZ folder
@@ -750,7 +771,7 @@ Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize, i_c
 	Wave filLocs_px
 	Variable gridSize, i_center
 	
-	Make/O/N=(gridSize, gridSize) sensis_Sx = NaN, sensis_Sy = NaN
+	Make/O/D/N=(gridSize, gridSize) sensis_Sx = NaN, sensis_Sy = NaN
 	Variable sensi_Sx, sensi_Sy
 	Variable x_px, y_px
 	Variable i, imax = DimSize(filLocs_px, 0)
