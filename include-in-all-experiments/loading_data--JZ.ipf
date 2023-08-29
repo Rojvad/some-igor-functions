@@ -113,6 +113,89 @@ Function consolidate_pixelFiles_move_ssVersion([pathString])
 
 End
 
+// #todo: Give a warning (or save some value in a wave) if there was saturation in the data
+//
+// calculate_variancesFromFlucsTDMS
+//		Loads data from a TDMS, and assumes there are three channels called "xNoise", "yNoise", and "zNoise",
+//		which store Sx(t), Sy(t), and Sz(t), respectively. Calculate the variance for each of these signals.
+//		Save the three values, but delete the data.
+// parameters:
+// 	pathToTDMS : a String that gives the complete path to the TDMS file
+// outputs:
+// 	varSx : variance(Sx(t)), a variable
+//		varSy : variance(Sy(t)), a variable
+// 	varSz : variance(Sz(t)), a variable
+Function [Variable varSx, Variable varSy, Variable varSz] calculate_variancesFromFlucsTDMS(String pathToTDMS)
+	
+	TDMLoadData/Q/T=":TDMData"/XSCL=15/PROP=0 pathToTDMS
+	DFREF tdmDF = :TDMData
+	
+	Wave/SDFR=tdmDF Sx = :PosAlongFil:xNoise
+	Wave/SDFR=tdmDF Sy = :PosAlongFil:yNoise
+	Wave/SDFR=tdmDF Sz = :PosAlongFil:zNoise
+	
+	varSx = variance(Sx)
+	varSy = variance(Sy)
+	varSz = variance(Sz)
+	
+	KillDataFolder tdmDF
+	
+End
+
+// #bonus: throw an error or abort if you don't find the folder
+//
+// load_flucsData_useTDMS:
+// 	For every filament location, find the TDMS file holding Sx(t), Sy(t), and Sz(t)
+//		and find the variances of those signals. Store the results in the 3 waves.
+// parameters:
+//		pixelDataPathString : a string with the complete path to the folder "pixelData".
+//		You must run consolidate_pixelFiles_move() to move everything to that folder.
+// outpusts:
+// 	filVarsSx : The value of variance(Sx(t)) for every filament location
+//		filVarsSx : Same, but for Sy
+//		filVarsSz : Same, but for Sz
+Function load_flucsData_useTDMS([pixelDataPathString])
+	String pixelDataPathString
+	
+	if (!ParamIsDefault(pixelDataPathString))
+		NewPath/O pixelDataPath, pixelDataPathString
+	else
+		NewPath/O pixelDataPath
+		PathInfo pixelDataPath
+		pixelDataPathString = S_path
+	endif
+	
+	String allFileList = IndexedFile(pixelDataPath, -1, ".tdms")
+	
+	// Collect all the files whith fluctuation data
+	// We only want the files that start with "Fluctuations___"
+	String flucsFileList = ""
+	String fileName
+	Variable i, imax = ItemsInList(allFileList), keep
+	for (i=0; i<iMax; i+=1)
+		fileName = StringFromList(i, allFileList)
+		keep = StringMatch(fileName, "Fluctuations*")
+		if (keep)
+			flucsFileList = AddListItem(fileName, flucsFileList)
+		endif
+	endfor
+	
+	flucsFileList = SortList(flucsFileList, ";", 16)
+	
+	imax = ItemsInList(flucsFileList)
+	String pathToTDMS
+	Variable varSx, varSy, VarSz
+	Make/O/D/N=(imax) filVarsSx, filVarsSy, filVarsSz
+	for (i=0; i<imax; i+=1)
+		pathToTDMS = pixelDataPathString + StringFromList(i, flucsFileList)
+		[varSx, varSy, varSz] = calculate_variancesFromFlucsTDMS(pathToTDMS)
+		filVarsSx[i] = varSx
+		filVarsSy[i] = varSy
+		filVarsSz[i] = varSz
+	endfor
+	
+End
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Added the stuff below on 2023/02/07. I didn't check it to perfection, I just
 // knew I'd need it for taking data on 02/08.
@@ -761,11 +844,12 @@ Function/D findDerivAtCenter_simple(wIn, i_center)
 	Return result
 End
 
-// This uses "findDerivAtCenter_simple" to find an Sx and Sy
-// sensitivity for every filament location.
-// It saves the results in 2D waves, sensis_Sx and sensis_Sy.
-// To find where to put each sensitivity, it looks up the x
-// and y pixel values from filLocs_px
+// findSensis_simple:
+// 	This uses "findDerivAtCenter_simple" to find an Sx and Sy
+// 	sensitivity for every filament location.
+// 	It saves the results in 2D waves, sensis_Sx and sensis_Sy.
+// 	To find where to put each sensitivity, it looks up the x
+// 	and y pixel values from filLocs_px
 Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize, i_center)
 	Wave/WAVE perpScans_Sx, perpScans_Sy
 	Wave filLocs_px
@@ -784,6 +868,35 @@ Function findSensis_simple(perpScans_Sx, perpScans_Sy, filLocs_px, gridSize, i_c
 		
 		sensi_Sy = findDerivAtCenter_simple(perpScans_Sy[i], i_center)
 		sensis_Sy[x_px][y_px] = sensi_Sy
+	endfor
+
+End
+
+// findSensis_simple_offGrid:
+//		Calculate the Sx and Sy sensitivities for every filament location.
+//		Go through all the perpendicular scans.For each one, find the absolute value
+//		of dSx/dN and dSy/dN at the index i_center.
+//	paramaters:
+//		perpScans_Sx : a wave of wave references which point to all the Sx(N) perp scans
+//		perpSCans_Sy : same, but for Sy(N)
+//		i_center : which point along the perpendicular scan to use for the sensitivities
+// outputs:
+//		simpleSensi_Sx : stores dSx/dN[i_center] for all the filament locations
+//		simpleSensi_Sy : same, but for dSy/dN[i_center]
+Function findSensis_simple_offGrid(perpScans_Sx, perpScans_Sy, i_center)
+	Wave/WAVE perpScans_Sx, perpScans_Sy
+	Variable i_center
+	
+	
+	Variable i, imax = DimSize(perpScans_sx, 0)
+	Make/O/D/N=(imax) simpleSensi_Sx, simpleSensi_Sy
+	Variable sensi_Sx, sensi_Sy
+	for (i=0; i<imax; i+=1)
+		sensi_Sx = findDerivAtCenter_simple(perpScans_Sx[i], i_center)
+		simpleSensi_Sx[i] = sensi_Sx
+		
+		sensi_Sy = findDerivAtCenter_simple(perpScans_Sy[i], i_center)
+		simpleSensi_Sy[i] = sensi_Sy
 	endfor
 
 End
