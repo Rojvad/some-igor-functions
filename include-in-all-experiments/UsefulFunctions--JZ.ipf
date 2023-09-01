@@ -126,21 +126,25 @@ Function start_listFromCursor(ba) : ButtonControl
 			String list_xName = listName + "x"
 			String list_yName = listName + "y"
 			String list_valName = listName + "val"
+			String list_pName = listName + "p"
 			String list_dName = listNAme + "d"
 	
 			Make/O/N=0 $list_xName
 			Make/O/N=0 $list_yName
-			Make/O/N=0 $list_valName
+			Make/O/D/N=0 $list_valName
+			Make/O/I/N=0 $list_pName
 			Make/O/N=0 $list_dName
 	
 			Wave list_X = $list_xName
 			Wave list_y = $list_yName
 			Wave list_val = $list_valName
+			Wave list_p = $list_pName
 			Wave list_d = $list_dName
 	
 			InsertPoints/V=(hcsr(A)) 1, 1, list_x
 			InsertPoints/V=(vcsr(A)) 1, 1, list_y
 			InsertPoints/V=(zcsr(A)) 1, 1, list_val
+			InsertPoints/V=(pcsr(A)) 1, 1, list_p
 			InsertPoints/V=0 1, 1, list_d
 			
 			break
@@ -161,17 +165,20 @@ Function add_PointFromCursor(ba) : ButtonControl
 			String list_xName = listName + "x"
 			String list_yName = listName + "y"
 			String list_valName = listName + "val"
+			String list_pName = listName + "p"
 			String list_dName = listNAme + "d"
 			
 			//#extra: throw an error if wave isn't found
 			Wave list_X = $list_xName
 			Wave list_y = $list_yName
 			Wave list_val = $list_valName
+			Wave list_p = $list_pName
 			Wave list_d = $list_dName
 	
 			InsertPoints/V=(hcsr(A)) numpnts(list_x), 1, list_x
 			InsertPoints/V=(vcsr(A)) numpnts(list_y), 1, list_y
 			InsertPoints/V=(zcsr(A)) numpnts(list_val), 1, list_val
+			InsertPoints/V=(pcsr(A)) numpnts(list_p), 1, list_p
 			Variable distance = dist(hcsr(A), list_x[0], vcsr(A), list_y[0])
 			InsertPOints/V=(distance) numpnts(list_d), 1, list_d
 			break
@@ -254,4 +261,13 @@ Function plot_waves_allSS(waveWave, plotName, mode)
 		ModifyGraph mode=3,marker=19,msize=1
 	endif
 		
+End
+
+Function check_refWave(refWave, i)
+	Wave/WAVE refWave
+	Variable i
+	
+	Wave oneWave = refWave[i]
+	Display/N=checking_refWave oneWave
+	
 End
