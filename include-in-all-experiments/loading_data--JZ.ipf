@@ -424,7 +424,7 @@ Function load_aMicWaves_ss([pathString])
 		
 		// Filament locations. This is a delimited text file.
 		LoadWave/Q/J/M/D/P=myPath/A=filLocs_um_ss/K=1 ":" + StringFromList(i, dirList) + ":FilamentScatterWaveAxisONLYordered_in_m"
-		wName = "filLocs_m_ss" + num2str(i)
+		wName = "filLocs_um_ss" + num2str(i)
 		Wave oneWave = $wName
 		oneWave *= 1e6
 		oneWave[][0] += xOffset

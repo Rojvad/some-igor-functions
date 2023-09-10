@@ -271,3 +271,31 @@ Function check_refWave(refWave, i)
 	Display/N=checking_refWave oneWave
 	
 End
+
+// contourLength:
+// 	Use to calculate the contour length along a filament. The starting
+// 	point is (xi, yi)
+// parameters:
+// 	xWave : the x-positions of the filament points
+//		yWave : the y-positions of the filament points
+//		(xi, yi) : the point that your measure contour length from
+//		wOutName : name of the wave to store the results. Will have the
+// 		same length as xWave and yWave.
+Function contourLength(xWave, yWave, xi, yi, wOutName)
+	Wave xWave, yWave
+	Variable xi, yi
+	String wOutName
+	
+	Make/O/N=(numpnts(xWave)) $wOutName
+	Wave wOut = $wOutName
+	
+	Variable ds = dist(xi, xWave[0], yi, yWave[0])
+	wOut[0] = ds
+	
+	Variable i, imax = numpnts(xWave)
+	for (i=1; i<imax; i+=1)
+		ds = dist(xWave[i], xWave[i-1], yWave[i], yWave[i-1])
+		wOut[i] = wOut[i-1] + ds
+	endfor
+	
+End
