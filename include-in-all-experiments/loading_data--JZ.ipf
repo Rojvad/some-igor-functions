@@ -503,10 +503,11 @@ Function load_allWavesLikeTemplate(nameTemplate, mode, [pathString, df, wOutName
 			wName = fileName // I may decide to use a different name
 		endif
 		
+		
 		if (StringMatch(mode, "1d"))
 			Make/O/D/N=(DimSize(wIn0,1)) $wName = wIn0[0][p]
 		elseif (StringMatch(mode, "2d"))
-			Rename wIn0, $wName
+			Duplicate/O wIn0, $wName
 		endif
 		Wave oneWave = $wName
 		refWave[i] = oneWave
