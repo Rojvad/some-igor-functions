@@ -275,10 +275,11 @@ End
 // contourLength:
 // 	Use to calculate the contour length along a filament. The starting
 // 	point is (xi, yi)
+//		BEWARE! make sure that (xi, yi) is on the same side of the filament
+//		as (xWave[0], yWave[0]).
 // parameters:
-// 	xWave : the x-positions of the filament points
-//		yWave : the y-positions of the filament points
-//		(xi, yi) : the point that your measure contour length from
+// 	xWave, yWave : positions of the filament points
+//		(xi, yi) : point that your measure contour length from
 //		wOutName : name of the wave to store the results. Will have the
 // 		same length as xWave and yWave.
 Function contourLength(xWave, yWave, xi, yi, wOutName)
