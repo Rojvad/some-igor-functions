@@ -300,3 +300,27 @@ Function contourLength(xWave, yWave, xi, yi, wOutName)
 	endfor
 	
 End
+
+Function msd_oneK(wIn, k)
+	Wave wIn
+	Variable k
+	
+	Variable len = numpnts(wIn) - k
+	Make/O/D/N=(len) diffSq = (wIn[p+k] - wIn[p])^2
+	
+	Return sum(diffSq) / len
+	
+End
+
+Function msd(wIn, isScaled)
+	Wave wIn
+	Variable isScaled
+	
+	String wOutName = "msd_" + NameOfWave(wIn)
+	Make/O/D/N=(numpnts(wIn)) $wOutName = msd_oneK(wIn, p)
+	
+	if (isScaled)
+		Wave wOut = $wOutName
+		SetScale/P x, 0, DimDelta(wIn, 0), WaveUnits(wIn, 0), wOut
+	endif
+End
