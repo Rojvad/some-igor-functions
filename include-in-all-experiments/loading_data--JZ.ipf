@@ -361,7 +361,7 @@ Function load_aMicWaves_ss([pathString])
 		NewPath/O basePath
 	endif
 
-	String dirList = IndexedDir(myPath, -1, 0)
+	String dirList = IndexedDir(basePath, -1, 0)
 	
 	// put the directories in the correct order
 	dirList = SortList(dirList, ";", 16)
@@ -375,24 +375,23 @@ Function load_aMicWaves_ss([pathString])
 	String wName
 	for (i=0; i<imax; i+=1)
 		// stez. The stez waves have the ss number saved in the Igor Binary
-		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":stez.ibw"
+		LoadWave/Q/P=basePath ":" + StringFromList(i, dirList) + ":stez.ibw"
 		wName = "stez_ss" + num2str(i)
 		Wave oneWave = $wName
 		stezRef_allSS[i] = oneWave
 		xOffset = DimOffset(oneWave, 0)
 		yOffset = DimOffset(oneWave, 1)
-		dx = DimDelta(oneWave, 0)
 		dy = DimDelta(oneWave, 1)
 		
 		// Sx and Sy (assumes they're saved as Igor binaries)
-		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":Sx.ibw"
+		LoadWave/Q/P=basePath ":" + StringFromList(i, dirList) + ":Sx.ibw"
 		Wave Sx
 		wName = "Sx_ss" + num2str(i)
 		Rename Sx, $wName
 		Wave oneWave = $wName
 		SxRef_allSS[i] = oneWave
 		
-		LoadWave/Q/P=myPath ":" + StringFromList(i, dirList) + ":Sy.ibw"
+		LoadWave/Q/P=basePath ":" + StringFromList(i, dirList) + ":Sy.ibw"
 		Wave Sy
 		wName = "Sy_ss" + num2str(i)
 		Rename Sy, $wName
@@ -400,14 +399,14 @@ Function load_aMicWaves_ss([pathString])
 		SyRef_allSS[i] = oneWave
 		
 		// vvarSx and vvarSy. These are delimited text files.
-		LoadWave/Q/J/M/D/P=myPath/A=vvarSx_ss/K=1 ":" + StringFromList(i, dirList) + ":variance_Sx"
+		LoadWave/Q/J/M/D/P=basePath/A=vvarSx_ss/K=1 ":" + StringFromList(i, dirList) + ":variance_Sx"
 		wName = "vvarSx_ss" + num2str(i)
 		Wave oneWave = $wName
 		SetScale/P x, xOffset, dx, "um", oneWave
 		SetScale/P y, yOffset, dy, "um", oneWave
 		vvarSxRef_allSS[i] = oneWave
 		
-		LoadWave/Q/J/M/D/P=myPath/A=vvarSy_ss/K=1 ":" + StringFromList(i, dirList) + ":variance_Sy"
+		LoadWave/Q/J/M/D/P=basePath/A=vvarSy_ss/K=1 ":" + StringFromList(i, dirList) + ":variance_Sy"
 		wName = "vvarSy_ss" + num2str(i)
 		Wave oneWave = $wName
 		SetScale/P x, xOffset, dx, "um", oneWave
@@ -415,7 +414,7 @@ Function load_aMicWaves_ss([pathString])
 		vvarSyRef_allSS[i] = oneWave
 		
 		// angleWave. This is a delimited text file
-		LoadWave/Q/J/M/D/P=myPath/A=angleImg_ss/K=1 ":" + StringFromList(i, dirList) + ":AngleWaveImage"
+		LoadWave/Q/J/M/D/P=basePath/A=angleImg_ss/K=1 ":" + StringFromList(i, dirList) + ":AngleWaveImage"
 		wName = "angleImg_ss" + num2str(i)
 		Wave oneWave = $wName
 		SetScale/P x, xOffset, dx, "um", oneWave
@@ -423,7 +422,7 @@ Function load_aMicWaves_ss([pathString])
 		angleImgRef_allSS[i] = oneWave
 		
 		// Filament locations. This is a delimited text file.
-		LoadWave/Q/J/M/D/P=myPath/A=filLocs_um_ss/K=1 ":" + StringFromList(i, dirList) + ":FilamentScatterWaveAxisONLYordered_in_m"
+		LoadWave/Q/J/M/D/P=basePath/A=filLocs_um_ss/K=1 ":" + StringFromList(i, dirList) + ":FilamentScatterWaveAxisONLYordered_in_m"
 		wName = "filLocs_um_ss" + num2str(i)
 		Wave oneWave = $wName
 		oneWave *= 1e6
