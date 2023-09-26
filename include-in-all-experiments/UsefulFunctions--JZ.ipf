@@ -220,14 +220,20 @@ Function/D dist(x1, x2, y1, y2)
 End
 
 // If you have a wave of wave references, this function rescales all the referenced waves
-Function scale_waves_edit(waves, xi, dx, unit)
+Function scale_waves_edit(waves, xi, dx, unit, [dim])
 	Wave/WAVE waves
-	Variable xi, dx
+	Variable xi, dx, dim
 	String unit
 	
 	Variable i, imax = numpnts(waves)
 	for (i=0; i<imax; i+=1)
-		SetScale/P x, xi, dx, unit, waves[i]
+		if (dim == 0)
+			SetScale/P x, xi, dx, unit, waves[i]
+		elseif (dim == 1)
+			SetScale/P y, xi, dx, unit, waves[i]
+		elseif (dim == 2)
+			SetScale/P z, xi, dx, unit, waves[i]
+		endif
 	endfor
 End
 
@@ -312,12 +318,14 @@ Function msd_oneK(wIn, k)
 	
 End
 
-Function msd(wIn, isScaled)
+Function msd(wIn, kmax, isScaled)
 	Wave wIn
-	Variable isScaled
+	Variable kMax, isScaled
 	
 	String wOutName = "msd_" + NameOfWave(wIn)
-	Make/O/D/N=(numpnts(wIn)) $wOutName = msd_oneK(wIn, p)
+//	Make/O/D/N=(numpnts(wIn)) $wOutName = msd_oneK(wIn, p)
+	Make/O/D/N=(kMax) $wOutName = msd_oneK(wIn, p)
+
 	
 	if (isScaled)
 		Wave wOut = $wOutName
