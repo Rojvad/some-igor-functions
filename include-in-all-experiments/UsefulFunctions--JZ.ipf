@@ -1,6 +1,8 @@
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+constant kB = 1.380649e-23
+
 // This is just a shortcut for setting a graph to "Plan" scaling
 Function plan()
 	ModifyGraph width={Plan,1,bottom,left}
@@ -331,4 +333,62 @@ Function msd(wIn, kmax, isScaled)
 		Wave wOut = $wOutName
 		SetScale/P x, 0, DimDelta(wIn, 0), WaveUnits(wIn, 0), wOut
 	endif
+End
+
+Function make_filSensi(wave_prefix, sensiWave, xOrY, intersection)
+	String wave_prefix
+	Wave sensiWave, intersection
+	Variable xOrY
+	
+	String xs_wName = wave_prefix + "_x"
+	String ys_wName = wave_prefix + "_y"
+	String ps_wName = wave_prefix + "_p"
+	
+	Wave xs = $xs_wName
+	Wave ys = $ys_wName
+	Wave ps = $ps_wName
+	
+	String axisName, sensi_wName, sensi_avgName
+	
+	Variable n = numpnts(xs)
+	if (xOrY == 0)
+		axisName = "x"
+		sensi_wName = wave_prefix + "_simpleSensiX"
+		sensi_avgName = wave_prefix + "_avgSensiX"
+	elseif (xOrY == 1)
+		axisName = "y"
+		sensi_wName = wave_prefix + "_simpleSensiY"
+		sensi_avgName = wave_prefix + "_avgSensiY"
+	endif
+	
+	Make/D/N=(n) $sensi_wName = sensiWave[ps[p]]
+	Wave sensis = $sensi_wName
+	Variable/G $sensi_avgName/N=avgSensi
+	avgSensi = mean(sensis)
+	
+	String ds_wName = wave_prefix + "_d"
+	ContourLength(xs, ys, intersection[0], intersection[1], ds_wName)
+End
+
+Function make_sensiPlot(xs, ys, avgSensi, gName)
+	Wave xs, ys
+	Variable avgSensi
+	String gName
+	
+	Display/N=$gName ys vs xs
+	ModifyGraph lsize=2
+	Label left "\\Z16\\$WMTEX$ \\alpha_i \\$/WMTEX$ [V/nm]";DelayUpdate
+	Label bottom "\\Z16Contour length from intersection [um]";DelayUpdate
+	SetAxis left 0,*
+	TextBox/C/N=text0/X=0.00/Y=0.00 "data set"
+	
+	Variable sensi_val = avgSensi * 1e3
+	String sensi_textBox
+	sprintf sensi_textBox,  "\\Z16\\$WMTEX$ \\overline{\\alpha_i} = %.2g \\$/WMTEX$ V/um", sensi_val
+	TextBox/C/N=text1/A=LC/F=0/X=0.00/Y=0.00 sensi_textBox
+	
+	ShowTools/A arrow
+	SetDrawEnv ycoord= left,linethick= 1.50
+	DrawLine 0,avgSensi,1,avgSensi
+	HideTools/A
 End

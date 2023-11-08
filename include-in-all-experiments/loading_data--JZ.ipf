@@ -493,7 +493,7 @@ Function load_allWavesLikeTemplate(nameTemplate, mode, [pathString, df, wOutName
 	String wName
 	for (i=0; i<imax; i+=1)
 		fileName = StringFromList(i, matchingWavesList)
-		// Print "fileName = " + fileName // #todo: remove this print statement later
+//		Print "fileName = " + fileName
 		LoadWave/Q/J/M/D/N=wIn/K=0/P=myPath fileName
 		Wave wIn0
 		if (!ParamIsDefault(wOutName))
