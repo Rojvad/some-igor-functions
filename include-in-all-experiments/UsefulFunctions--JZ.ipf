@@ -2,6 +2,10 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 constant kB = 1.380649e-23
+constant vvarSx_bg_20230907 = 0.0007226412394505603
+constant vvarSy_bg_20230907 = 0.0008008972765126789
+constant vvarSx_bg_20230915 = 0.0006657215657360039
+constant vvarSy_bg_20230915 = 0.0006192530685472548
 
 // This is just a shortcut for setting a graph to "Plan" scaling
 Function plan()
