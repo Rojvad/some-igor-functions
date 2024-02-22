@@ -69,7 +69,7 @@ Function myLine_2(w,x) : FitFunc
 	return w[0]*90 - w[0]*abs(90-x)
 End
 
-Function sensiX_simFit(w,x) : FitFunc
+Function simFitX(w,x) : FitFunc
 	Wave w
 	Variable x
 
@@ -83,11 +83,11 @@ Function sensiX_simFit(w,x) : FitFunc
 	//CurveFitDialog/ Coefficients 1
 	//CurveFitDialog/ w[0] = a
 
-	Wave sensiX_sim_rescale
-	return w[0] * sensiX_sim_rescale(x)
+	Wave sensiX_sim0202
+	return w[0] * sensiX_sim0202(x)
 End
 
-Function sensiY_simFit(w,x) : FitFunc
+Function simFitY(w,x) : FitFunc
 	Wave w
 	Variable x
 
@@ -101,8 +101,8 @@ Function sensiY_simFit(w,x) : FitFunc
 	//CurveFitDialog/ Coefficients 1
 	//CurveFitDialog/ w[0] = a
 
-	Wave sensiY_sim_rescale
-	return w[0] * sensiY_sim_rescale(x)
+	Wave sensiY_sim0220
+	return w[0] * sensiY_sim0220(x)
 End
 
 Function rename_fitStuff(yDataName, newName)
