@@ -83,8 +83,8 @@ Function simFitX(w,x) : FitFunc
 	//CurveFitDialog/ Coefficients 1
 	//CurveFitDialog/ w[0] = a
 
-	Wave sensiX_sim0202
-	return w[0] * sensiX_sim0202(x)
+	Wave sensiX_sim0220
+	return w[0] * sensiX_sim0220(x)
 End
 
 Function simFitY(w,x) : FitFunc
