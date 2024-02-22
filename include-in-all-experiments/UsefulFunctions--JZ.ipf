@@ -396,3 +396,17 @@ Function make_sensiPlot(xs, ys, avgSensi, gName)
 	DrawLine 0,avgSensi,1,avgSensi
 	HideTools/A
 End
+
+// Make a copy of a wave. The copy will range from 0 to 1.
+Function change_range0to1(wIn)
+	Wave wIn
+
+	String wOutName = NameOfWave(wIn) + "_norm"
+	Duplicate wIn, $wOutName
+	Wave wOut = $wOutName
+	
+	Variable lowest = WaveMin(wIn)
+	Variable range = WaveMax(wIn) - lowest
+	wOut -= lowest
+	wOut /= range
+End
