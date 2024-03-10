@@ -12,6 +12,13 @@ Function plan()
 	ModifyGraph width={Plan,1,bottom,left}
 End
 
+// This is just a shortcut for removing the margins and axes
+// when you're making an image plot
+Function no_marg()
+	ModifyGraph margin=-1, noLabel=2, axThick=0
+End
+
+
 Function rainbow(isReverse)
 	Variable isReverse
 	
