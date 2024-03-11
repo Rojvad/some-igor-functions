@@ -900,3 +900,36 @@ Function findSensis_simple_offGrid(perpScans_Sx, perpScans_Sy, i_center)
 	endfor
 
 End
+
+// load_locsToUm:
+//		Load the filament locations stored in
+//		FilamentScatterWaveAxisONLYordered_in_m.
+//		Conver to um and add offsets so the locations can be displayed
+//		on image plots.
+// parameters:
+//		wOutName : String that determines name of the output wave
+//		scalingWave : a 2D wave (like Sx or Sy) that determines the offsets
+//		isAddToGraph : choose whether to append the filament locations to
+//			the top graph
+//	outputs:
+//		$wOut : the filament locations, in um
+Function load_locsToUm(wOutName, scalingWave, isAddToGraph)
+	String wOutName
+	Wave scalingWave
+	Variable isAddToGraph
+	
+	LoadWave/J/M/D/N=wave/K=1
+	Wave wave0
+	Rename wave0, $wOutName
+	Wave wOut = $wOutName
+	
+	wOut *= 1e6
+	wOut[][0] += DimOffset(scalingWave, 0)
+	wOut[][1] += DimOffset(scalingWave, 1)
+	
+	if (isAddToGraph)
+		AppendToGraph wOut[][1] vs wOut[][0]
+		ModifyGraph mode=3,marker=19,msize=1.5
+	endif
+	
+End
