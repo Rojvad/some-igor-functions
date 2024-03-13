@@ -417,3 +417,46 @@ Function change_range0to1(wIn)
 	wOut -= lowest
 	wOut /= range
 End
+
+//	calculate_perpScanPaths:
+//		For each filament location, use the angle in AngleWaveImage to calculate
+//		the path of the perpendicular sensitivity scan for that location.
+//	parameters:
+// 		filLocs : 2D wave. col 0 stores x locations and col 1 stores y locations
+//		AngleWaveImage : must be scaled to agree with the locations in filLocs
+//		perpLength : total length of the perpendicular scan. Usually 1 um
+//		db : step size for the perpendicular scan
+Function calculate_perpScanPaths(filLocs, AngleWaveImage, perpLength, db, [isPrint])
+	Wave filLocs, AngleWaveImage
+	Variable perpLength, db, isPrint
+	
+	Variable b0 = -perpLength/2
+	Variable Nb = perpLength/db + 1 // the number of steps taken for the perp scan
+	
+	Variable i, imax = DimSize(filLocs, 0)
+	Make/O/WAVE/N=(imax) x_perpScan_All, y_perpScan_All
+	variable fil_x, fil_y, fil_x_rounded, fil_y_rounded, fil_ang
+	String x_wName, y_wName
+	
+	for (i=0; i<imax; i+=1)
+		fil_x = filLocs[i][0]
+		fil_y = filLocs[i][1]
+		fil_x_rounded = round(fil_x*10) / 10 // rounded to the nearest 0.1 um
+		fil_y_rounded = round(fil_y*10) / 10 // rounded to the nearest 0.1 um
+		fil_ang = AngleWaveImage(fil_x_rounded)(fil_y_rounded)
+		if (isPrint)
+			printf "location %g: x = %g, y = %g, angle = %g\r", i, fil_x, fil_y, fil_ang
+		endif
+		
+		x_wName = "x_perpScan_" + num2str(i)
+		y_wName = "y_perpScan_" + num2str(i)
+		Make/O/N=(Nb) $x_WName, $y_wName
+		Wave x_perpScan = $x_wName
+		Wave y_perpScan = $y_wName
+		SetScale/P x, -perpLength/2, db, "um", x_perpScan, y_perpScan
+		x_perpScan = fil_x - x*sin((fil_ang-90)*pi/180)
+		y_perpScan = fil_y - x*cos((fil_ang-90)*pi/180)
+		x_perpScan_All[i] = x_perpScan
+		y_perpScan_All[i] = y_perpScan
+	endfor
+End
