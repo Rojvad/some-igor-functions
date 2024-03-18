@@ -460,3 +460,45 @@ Function calculate_perpScanPaths(filLocs, AngleWaveImage, perpLength, db, [isPri
 		y_perpScan_All[i] = y_perpScan
 	endfor
 End
+
+// rename_fitStuff:
+//		Once you've done a fit, this renames many of the results so that they aren't
+//		overwritten when you do another fit. It renames the
+//			-fit curve
+//			-residuals
+//			-fit parameters
+//			-fit parameters' standard deviation (W_sigma)
+//			-chi-squared value
+//	parameters:
+//		ogWaveName : a string with the name of the wave you did a fit on
+//		newSuffix : a string with the new name for all your stuff, e.g. "fit1"
+Function rename_fitStuff(ogWaveName, newSuffix)
+	String ogWaveName, newSuffix
+	
+	// Rename the fit curve
+	String fitName = "fit_" + ogWaveName
+	Wave fit =  $fitName
+	String newFitName = "fit_" + newSuffix
+	Rename fit, $newFitName
+	
+	// Rename the residuals wave
+	String resName = "Res_" + ogWaveName
+	Wave res =  $resName
+	String newResName = "Res_" + newSuffix
+	Rename res, $newResName
+	
+	// Rename the coefficient wave
+	Wave coef = W_coef
+	String newCoefName = "fitP_" + newSuffix
+	Rename coef, $newCoefName
+	
+	// Rename the coefficient uncertainty wave
+	Wave fitErr = W_sigma
+	String newFitErrName = "fitErr_" + newSuffix
+	Rename fitErr, $newFitErrName
+	
+	// Any other waves or variable that I might like to save from a fit? Chi-squared?
+	NVAR V_chisq
+	String newChiSqName = "chiSq_" + newSuffix
+	Variable/G $newChiSqName = V_chisq
+End
