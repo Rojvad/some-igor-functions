@@ -502,3 +502,17 @@ Function rename_fitStuff(ogWaveName, newSuffix)
 	String newChiSqName = "chiSq_" + newSuffix
 	Variable/G $newChiSqName = V_chisq
 End
+
+// This is how I like to format my histograms
+Proc histogram_style() : GraphStyle
+	PauseUpdate; Silent 1		// modifying window...
+	ModifyGraph/Z mode=5
+	ModifyGraph/Z hbFill=2
+	ModifyGraph/Z useBarStrokeRGB=1
+	ModifyGraph/Z tick(left)=2,tick(bottom)=1
+	ModifyGraph/Z mirror=1
+	ModifyGraph/Z minor(left)=1
+	ModifyGraph/Z axOffset(bottom)=-0.25
+	SetAxis/Z/A/N=1 left
+	SetAxis/Z/A/N=1 bottom
+EndMacro
